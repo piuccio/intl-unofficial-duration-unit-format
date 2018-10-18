@@ -1,0 +1,35 @@
+{
+  "name": "intl-unofficial-duration-unit-format",
+  "version": "0.0.0",
+  "description": "Unofficial implementation of duration UnitFormat",
+  "main": "index.js",
+  "scripts": {
+    "flow": "flow",
+    "lint": "eslint index.js tests",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "test:watch": "jest --watchAll"
+  },
+  "keywords": [
+    "intl",
+    "duration",
+    "format"
+  ],
+  "author": "Fabio Crisci",
+  "license": "MIT",
+  "jest": {
+    "testEnvironment": "node",
+    "transform": {
+      "\\.js$": "./internals/jest-transform.js"
+    }
+  },
+  "devDependencies": {
+    "babel-eslint": "10.0.1",
+    "eslint": "5.7.0",
+    "eslint-plugin-flowtype": "3.0.0",
+    "flow-bin": "0.83.0",
+    "flow-remove-types": "1.2.3",
+    "intl-messageformat": "2.2.0",
+    "jest": "23.6.0"
+  }
+}
