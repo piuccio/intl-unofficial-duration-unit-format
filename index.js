@@ -1,11 +1,15 @@
 // @flow
 const IntlMessageFormat = require('intl-messageformat');
+const trim = require('./lib/trim');
 
 function DurationUnitFormat(locales: string | Array<string>, options?: Options = defaultOptions) {
   this.locales = locales;
+  // TODO I'm ignoring the unit for now, value is always expressed in seconds
+  this.unit = 'second';
   this.format = options.format || defaultOptions.format;
   this.formatUnits = (options || defaultOptions).formatUnits || defaultOptions.formatUnits;
   this.formatDuration = options.formatDuration || defaultOptions.formatDuration;
+  this.shouldRound = options.round === true;
 }
 
 DurationUnitFormat.units = {
@@ -15,13 +19,8 @@ DurationUnitFormat.units = {
   SECOND: 'second',
 };
 
-DurationUnitFormat.prototype._has = function (unit: string) {
-  return ((this.options || {}).formatUnits || []).includes(unit);
-};
-
 DurationUnitFormat.prototype.formatToParts = function (value: number) {
-  // TODO I'm ignoring the unit for now, value is always expressed in seconds
-  const seconds = value;
+  const seconds = initialValue(value, this.unit, this.format, this.shouldRound);
   const tokens = {};
   const parts = [];
 
@@ -87,6 +86,7 @@ type Options = {|
   format?: string,
   formatUnits?: { [$Values<typeof DurationUnitFormat.units>]: string },
   formatDuration?: string,
+  round?: boolean,
 |}
 const defaultOptions = {
   // unit: DurationUnitFormat.units.SECOND,
@@ -98,6 +98,7 @@ const defaultOptions = {
     [DurationUnitFormat.units.SECOND]: '{value, plural, one {second} other {seconds}}',
   },
   formatDuration: '{value} {unit}',
+  round: false,
 };
 
 const SPLIT_POINTS = /(\{value\}|\{unit\})/;
@@ -127,22 +128,23 @@ function has(format, unit) {
   return format.indexOf(`{${unit}}`) !== -1 || format.indexOf(`{${unit}s}`) !== -1;
 }
 
-function trim(parts) {
-  return leftTrim(leftTrim(parts).reverse()).reverse();
-}
+function initialValue(value, valueUnit, format, shouldRound) {
+  const initial = value * SECONDS_IN[valueUnit];
+  if (!shouldRound) return initial;
 
-function leftTrim(parts) {
-  let previousEmpty = true;
-  return parts.filter((token) => {
-    if (token.type === 'literal' && !token.value.trim()) {
-      if (previousEmpty) return false;
-      previousEmpty = true;
-      return true;
+  let hasLowerUnit = has(format, DurationUnitFormat.units.SECOND);
+  return [
+    DurationUnitFormat.units.MINUTE,
+    DurationUnitFormat.units.HOUR,
+    DurationUnitFormat.units.DAY,
+  ].reduce((seconds, unit) => {
+    if (hasLowerUnit) {
+      return seconds;
     } else {
-      previousEmpty = false;
+      hasLowerUnit = has(format, unit);
+      return Math.round(seconds / SECONDS_IN[unit]) * SECONDS_IN[unit];
     }
-    return true;
-  });
+  }, initial);
 }
 
 module.exports = DurationUnitFormat;

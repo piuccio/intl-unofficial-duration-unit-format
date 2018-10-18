@@ -5,10 +5,12 @@
   "main": "index.js",
   "scripts": {
     "flow": "flow",
-    "lint": "eslint index.js tests",
+    "lint": "eslint index.js tests lib",
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "test:watch": "jest --watchAll"
+    "test:watch": "jest --watchAll",
+    "posttest": "npm run lint",
+    "posttest:coverage": "npm run lint"
   },
   "keywords": [
     "intl",
