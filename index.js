@@ -103,20 +103,20 @@ DurationUnitFormat.prototype._formatValue = function (number) {
 type Options = {|
   // unit: $Values<typeof DurationUnitFormat.units>,
   format?: string,
-  formatUnits?: { [$Values<typeof DurationUnitFormat.units>]: string },
   formatDuration?: string,
+  formatUnits?: { [$Values<typeof DurationUnitFormat.units>]: string },
   round?: boolean,
   style?: $Values<typeof DurationUnitFormat.styles>,
 |}
 const defaultOptions = {
   // unit: DurationUnitFormat.units.SECOND,
+  formatDuration: '{value} {unit}',
   formatUnits: {
     [DurationUnitFormat.units.DAY]: '{value, plural, one {day} other {days}}',
     [DurationUnitFormat.units.HOUR]: '{value, plural, one {hour} other {hours}}',
     [DurationUnitFormat.units.MINUTE]: '{value, plural, one {minute} other {minutes}}',
     [DurationUnitFormat.units.SECOND]: '{value, plural, one {second} other {seconds}}',
   },
-  formatDuration: '{value} {unit}',
   round: false,
   style: DurationUnitFormat.styles.CUSTOM,
 };

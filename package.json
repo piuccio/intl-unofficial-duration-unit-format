@@ -16,6 +16,15 @@
     "posttest": "npm run lint",
     "posttest:coverage": "npm run lint"
   },
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/en-japan-air/intl-unofficial-duration-unit-format"
+  },
+  "files": [
+    "index.js",
+    "lib",
+    "dist"
+  ],
   "keywords": [
     "intl",
     "duration",
@@ -45,6 +54,6 @@
     "rollup-plugin-flow-entry": "0.2.0"
   },
   "peerDependencies": {
-    "intl-messageformat": "^2.x"
+    "intl-messageformat": ">= 2.0"
   }
 }
