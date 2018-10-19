@@ -1,6 +1,6 @@
 // @flow
-const IntlMessageFormat = require('intl-messageformat');
-const trim = require('./lib/trim');
+import IntlMessageFormat from 'intl-messageformat';
+import trim from './lib/trim';
 
 function DurationUnitFormat(locales: string | Array<string>, options?: Options = defaultOptions) {
   this.locales = locales;
@@ -147,4 +147,4 @@ function initialValue(value, valueUnit, format, shouldRound) {
   }, initial);
 }
 
-module.exports = DurationUnitFormat;
+export default DurationUnitFormat;

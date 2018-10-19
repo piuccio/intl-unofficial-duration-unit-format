@@ -2,10 +2,14 @@
   "name": "intl-unofficial-duration-unit-format",
   "version": "0.0.0",
   "description": "Unofficial implementation of duration UnitFormat",
-  "main": "index.js",
+  "main": "dist/es5/bundle.cjs.min.js",
+  "module": "index.js",
   "scripts": {
+    "compile": "rollup -c rollup.config.js",
+    "codecov": "codecov",
     "flow": "flow",
     "lint": "eslint index.js tests lib",
+    "prepare": "npm run compile",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watchAll",
@@ -32,6 +36,15 @@
     "flow-bin": "0.83.0",
     "flow-remove-types": "1.2.3",
     "intl-messageformat": "2.2.0",
-    "jest": "23.6.0"
+    "jest": "23.6.0",
+    "rollup": "0.66.6",
+    "rollup-plugin-babel-minify": "6.1.1",
+    "rollup-plugin-buble": "0.19.4",
+    "rollup-plugin-filesize": "5.0.1",
+    "rollup-plugin-flow": "1.1.1",
+    "rollup-plugin-flow-entry": "0.2.0"
+  },
+  "peerDependencies": {
+    "intl-messageformat": "^2.x"
   }
 }
