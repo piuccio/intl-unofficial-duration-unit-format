@@ -1,5 +1,5 @@
 // @flow
-const DurationUnitFormat = require('../index');
+import DurationUnitFormat from '../index';
 
 describe('formatToParts', () => {
   it('formats to parts with custom format including minutes', () => {
