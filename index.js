@@ -6,7 +6,8 @@ function DurationUnitFormat(locales: string | Array<string>, options?: Options =
   this.locales = locales;
   // TODO I'm ignoring the unit for now, value is always expressed in seconds
   this.unit = 'second';
-  this.format = options.format || defaultOptions.format;
+  this.isTimer = options.style === DurationUnitFormat.styles.TIMER;
+  this.format = options.format || (this.isTimer ? '{minutes}:{seconds}' : '{seconds}');
   this.formatUnits = (options || defaultOptions).formatUnits || defaultOptions.formatUnits;
   this.formatDuration = options.formatDuration || defaultOptions.formatDuration;
   this.shouldRound = options.round === true;
@@ -17,6 +18,16 @@ DurationUnitFormat.units = {
   HOUR: 'hour',
   MINUTE: 'minute',
   SECOND: 'second',
+};
+
+DurationUnitFormat.styles = {
+  CUSTOM: 'custom',
+  // TODO eventually maybe implement these? from cldr
+  // http://www.unicode.org/cldr/charts/27/summary/pl.html#5556
+  // LONG: 'long',
+  // SHORT: 'short',
+  // NARROW: 'narrow',
+  TIMER: 'timer',
 };
 
 DurationUnitFormat.prototype.formatToParts = function (value: number) {
@@ -43,7 +54,7 @@ DurationUnitFormat.prototype.formatToParts = function (value: number) {
     }
   });
 
-  const trimmed = trim(parts);
+  const trimmed = trim(parts, this.isTimer);
   if (trimmed.length === 0) {
     // if everything cancels out, return 0 on the lowest available unit
     const minUnit = [
@@ -59,7 +70,7 @@ DurationUnitFormat.prototype.formatToParts = function (value: number) {
 
 DurationUnitFormat.prototype._formatTokens = function(tokens, unit, seconds) {
   const chunk = has(this.format, unit) ? Math.floor(seconds / SECONDS_IN[unit]) : 0;
-  if (chunk) {
+  if (chunk || this.isTimer) {
     tokens[unit] = this._formatDurationToParts(unit, chunk);
   }
   return seconds - chunk * SECONDS_IN[unit];
@@ -68,7 +79,11 @@ DurationUnitFormat.prototype._formatTokens = function(tokens, unit, seconds) {
 DurationUnitFormat.prototype._formatDurationToParts = function(unit, number) {
   return this.formatDuration.split(SPLIT_POINTS).map((text) => {
     if (text === '{value}') {
-      return { type: unit, value: number.toString() };
+      return { type: unit, value: this._formatValue(number) };
+    }
+    if (this.isTimer) {
+      // With timer style, we only show the value
+      return;
     }
     if (text === '{unit}') {
       const message = this.formatUnits[unit] || '{value}';
@@ -81,16 +96,20 @@ DurationUnitFormat.prototype._formatDurationToParts = function(unit, number) {
   }).filter(Boolean);
 }
 
+DurationUnitFormat.prototype._formatValue = function (number) {
+  return this.isTimer ? number.toString().padStart(2, '0') : number.toString();
+}
+
 type Options = {|
   // unit: $Values<typeof DurationUnitFormat.units>,
   format?: string,
   formatUnits?: { [$Values<typeof DurationUnitFormat.units>]: string },
   formatDuration?: string,
   round?: boolean,
+  style?: $Values<typeof DurationUnitFormat.styles>,
 |}
 const defaultOptions = {
   // unit: DurationUnitFormat.units.SECOND,
-  format: '{seconds}',
   formatUnits: {
     [DurationUnitFormat.units.DAY]: '{value, plural, one {day} other {days}}',
     [DurationUnitFormat.units.HOUR]: '{value, plural, one {hour} other {hours}}',
@@ -99,6 +118,7 @@ const defaultOptions = {
   },
   formatDuration: '{value} {unit}',
   round: false,
+  style: DurationUnitFormat.styles.CUSTOM,
 };
 
 const SPLIT_POINTS = /(\{value\}|\{unit\})/;
