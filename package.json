@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "Unofficial implementation of duration UnitFormat",
   "main": "dist/es5/bundle.cjs.min.js",
-  "module": "index.js",
+  "module": "dist/es6/bundle.cjs.min.js",
   "scripts": {
     "compile": "rollup -c rollup.config.js",
     "codecov": "codecov",
