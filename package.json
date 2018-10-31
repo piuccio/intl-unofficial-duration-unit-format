@@ -1,6 +1,6 @@
 {
   "name": "intl-unofficial-duration-unit-format",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Unofficial implementation of duration UnitFormat",
   "main": "dist/es5/bundle.cjs.min.js",
   "module": "dist/es6/bundle.cjs.min.js",
