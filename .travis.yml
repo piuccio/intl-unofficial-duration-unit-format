@@ -1,0 +1,14 @@
+language: node_js
+node_js:
+  - 8
+  - 10
+git:
+  depth: 3
+cache: npm
+notifications:
+  email: false
+script:
+  - npm run lint
+  - npm run test:coverage
+after_success:
+  - test -f ./coverage/lcov.info && npm run codecov
