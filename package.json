@@ -6,8 +6,6 @@
   "module": "dist/es6/bundle.cjs.min.js",
   "scripts": {
     "compile": "rollup -c rollup.config.js",
-    "postcompile": "npm run flow:copy",
-    "flow:copy": "scripts/copy-flow-types.sh",
     "codecov": "codecov",
     "flow": "flow",
     "lint": "eslint index.js tests lib",
