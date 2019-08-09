@@ -43,14 +43,23 @@ DurationUnitFormat.prototype.formatToParts = function (value: number) {
   ].reduce((leftToFormat, unit) => this._formatTokens(tokens, unit, leftToFormat), seconds);
 
   // Go from the biggest possible unit because it doesn't depend on lower units
-  this.format.split(SPLIT_FORMAT).map((text) => {
-    if (SPLIT_FORMAT.test(text)) {
-      const unit = (text.match(EXTRACT_UNIT) || [])[1];
-      if (tokens[unit]) {
-        parts.push.apply(parts, tokens[unit]);
-      }
-    } else if (text) {
-      parts.push({ type: 'literal', value: text });
+  const formatParts = new IntlMessageFormat(this.format, this.locales).formatToParts({
+    second: { unit: DurationUnitFormat.units.SECOND },
+    seconds: { unit: DurationUnitFormat.units.SECOND },
+    minute: { unit: DurationUnitFormat.units.MINUTE },
+    minutes: { unit: DurationUnitFormat.units.MINUTE },
+    hour: { unit: DurationUnitFormat.units.HOUR },
+    hours: { unit: DurationUnitFormat.units.HOUR },
+    day: { unit: DurationUnitFormat.units.DAY },
+    days: { unit: DurationUnitFormat.units.DAY },
+  });
+  formatParts.forEach((part) => {
+    const {value} = part;
+    if (value.unit) {
+      // Use .apply because tokens is an array, it might contain multiple parts
+      parts.push.apply(parts, tokens[value.unit]);
+    } else if (value) {
+      parts.push({ type: 'literal', value });
     }
   });
 
@@ -122,20 +131,6 @@ const defaultOptions = {
 };
 
 const SPLIT_POINTS = /(\{value\}|\{unit\})/;
-const SPLIT_FORMAT = new RegExp(
-  '('
-  + Object.keys(DurationUnitFormat.units)
-    .map((key) => `\\{${DurationUnitFormat.units[key]}\\}|\\{${DurationUnitFormat.units[key]}s\\}`)
-    .join('|')
-  + ')',
-);
-const EXTRACT_UNIT = new RegExp(
-  '\\{('
-  + Object.keys(DurationUnitFormat.units)
-    .map((key) => DurationUnitFormat.units[key])
-    .join('|')
-  + ')s?\\}',
-);
 
 const SECONDS_IN = {
   day: 24 * 60 * 60,
