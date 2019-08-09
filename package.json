@@ -42,13 +42,11 @@
     }
   },
   "devDependencies": {
-    "@formatjs/intl-relativetimeformat": "2.5.2",
     "babel-eslint": "10.0.2",
     "buble-jest-flow": "1.0.7",
     "eslint": "6.1.0",
     "eslint-plugin-flowtype": "3.13.0",
     "flow-bin": "0.104.0",
-    "intl-locales-supported": "1.4.3",
     "intl-messageformat": "6.1.0",
     "intl-pluralrules": "1.0.3",
     "jest": "24.8.0",
