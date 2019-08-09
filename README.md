@@ -39,7 +39,9 @@ parts = [
 
 `npm i intl-unofficial-duration-unit-format`
 
-This package depends on [intl-messageformat](https://github.com/yahoo/intl-messageformat) which is listed in `peerDependencies`. `intl-messageformat` itself depends on the global [`Intl`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl) object. Refer to [`intl-messageformat` README](https://github.com/yahoo/intl-messageformat/blob/master/README.md#intl-dependency) on how to set it up correctly on node.js or in the browser.
+This package depends on [intl-messageformat](https://github.com/yahoo/intl-messageformat) which is listed in `peerDependencies`.
+
+`intl-messageformat` itself depends on the global [`Intl`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl) object. Refer to [`intl-messageformat` README](https://github.com/formatjs/formatjs/tree/master/packages/intl-messageformat#modern-intl-dependency) on how to set it up correctly on node.js or in the browser.
 
 ### Browser
 
