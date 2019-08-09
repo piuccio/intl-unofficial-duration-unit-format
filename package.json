@@ -42,6 +42,7 @@
     }
   },
   "devDependencies": {
+    "@formatjs/intl-relativetimeformat": "2.5.2",
     "babel-eslint": "10.0.2",
     "buble-jest-flow": "1.0.7",
     "eslint": "6.1.0",

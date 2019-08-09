@@ -9,4 +9,5 @@ if (!areIntlLocalesSupported(localesMyAppSupports)) {
   // `Intl` exists, but it doesn't have the data we need, so load the
   // polyfill and replace the constructors we need with the polyfill's.
   require('intl-pluralrules');
+  require('@formatjs/intl-relativetimeformat/polyfill');
 }
