@@ -34,6 +34,9 @@
   "license": "MIT",
   "jest": {
     "testEnvironment": "node",
+    "setupFiles": [
+      "<rootDir>/tests/_setup.js"
+    ],
     "transform": {
       "\\.js$": "buble-jest-flow"
     }
@@ -44,7 +47,9 @@
     "eslint": "6.1.0",
     "eslint-plugin-flowtype": "3.13.0",
     "flow-bin": "0.104.0",
+    "intl-locales-supported": "1.4.3",
     "intl-messageformat": "6.1.0",
+    "intl-pluralrules": "1.0.3",
     "jest": "24.8.0",
     "rollup": "1.19.4",
     "rollup-plugin-babel-minify": "9.0.0",
