@@ -6,9 +6,15 @@ function DurationUnitFormat(locales: string | Array<string>, options?: Options =
   this.locales = locales;
   // TODO I'm ignoring the unit for now, value is always expressed in seconds
   this.unit = 'second';
-  this.isTimer = options.style === DurationUnitFormat.styles.TIMER;
+  // .style determines how the placeholders are converted to plain text
+  this.style = options.style || DurationUnitFormat.styles.LONG;
+  // .isTimer determines some special behaviour, we want to keep the 0s
+  this.isTimer = this.style === DurationUnitFormat.styles.TIMER;
+  // .format used `seconds`, `minutes`, `hours`, ... as placeholders
   this.format = options.format || (this.isTimer ? '{minutes}:{seconds}' : '{seconds}');
+  // TODO what does this do again?
   this.formatUnits = (options || defaultOptions).formatUnits || defaultOptions.formatUnits;
+  // TODO what?
   this.formatDuration = options.formatDuration || defaultOptions.formatDuration;
   this.shouldRound = options.round === true;
 }
@@ -22,28 +28,16 @@ DurationUnitFormat.units = {
 
 DurationUnitFormat.styles = {
   CUSTOM: 'custom',
-  // TODO eventually maybe implement these? from cldr
-  // http://www.unicode.org/cldr/charts/27/summary/pl.html#5556
-  // LONG: 'long',
-  // SHORT: 'short',
-  // NARROW: 'narrow',
   TIMER: 'timer',
+  // http://www.unicode.org/cldr/charts/27/summary/pl.html#5556
+  LONG: 'long',
+  SHORT: 'short',
+  NARROW: 'narrow',
 };
 
 DurationUnitFormat.prototype.formatToParts = function (value: number) {
-  const seconds = initialValue(value, this.unit, this.format, this.shouldRound);
-  const tokens = {};
-  const parts = [];
-
-  [
-    DurationUnitFormat.units.DAY,
-    DurationUnitFormat.units.HOUR,
-    DurationUnitFormat.units.MINUTE,
-    DurationUnitFormat.units.SECOND,
-  ].reduce((leftToFormat, unit) => this._formatTokens(tokens, unit, leftToFormat), seconds);
-
-  // Go from the biggest possible unit because it doesn't depend on lower units
-  const formatParts = new IntlMessageFormat(this.format, this.locales).formatToParts({
+  // Extract all the parts that are actually used from the localised format
+  const parts = new IntlMessageFormat(this.format, this.locales).formatToParts({
     second: { unit: DurationUnitFormat.units.SECOND },
     seconds: { unit: DurationUnitFormat.units.SECOND },
     minute: { unit: DurationUnitFormat.units.MINUTE },
@@ -53,37 +47,24 @@ DurationUnitFormat.prototype.formatToParts = function (value: number) {
     day: { unit: DurationUnitFormat.units.DAY },
     days: { unit: DurationUnitFormat.units.DAY },
   });
-  formatParts.forEach((part) => {
-    const {value} = part;
-    if (value.unit) {
-      // Use .apply because tokens is an array, it might contain multiple parts
-      parts.push.apply(parts, tokens[value.unit]);
-    } else if (value) {
-      parts.push({ type: 'literal', value });
-    }
-  });
-
-  const trimmed = trim(parts, this.isTimer);
-  if (trimmed.length === 0) {
-    // if everything cancels out, return 0 on the lowest available unit
-    const minUnit = [
-      DurationUnitFormat.units.SECOND,
-      DurationUnitFormat.units.MINUTE,
-      DurationUnitFormat.units.HOUR,
-      DurationUnitFormat.units.DAY,
-    ].find((unit) => has(this.format, unit));
-    return this._formatDurationToParts(minUnit, 0);
-  }
-  return trimmed;
+  // Compute the value of each bucket depending on which parts are used
+  const buckets = splitSecondsInBuckets(value, this.unit, parts, this.shouldRound);
+  // Each part from the format message could potentially contain multiple parts
+  const result = parts.reduce((all, token) => all.concat(this._formatToken(token, buckets)), []);
+  return this._trimOutput(result, parts);
 };
 
-DurationUnitFormat.prototype._formatTokens = function(tokens, unit, seconds) {
-  const chunk = has(this.format, unit) ? Math.floor(seconds / SECONDS_IN[unit]) : 0;
-  if (chunk || this.isTimer) {
-    tokens[unit] = this._formatDurationToParts(unit, chunk);
+DurationUnitFormat.prototype._formatToken = function(token, buckets) {
+  const {value} = token;
+  if (value.unit) {
+    const number = buckets[value.unit];
+    return (number || this.isTimer) ? this._formatDurationToParts(value.unit, number) : [];
+  } else if (value) {
+    // If there is no .unit it's text, but it could be an empty string
+    return[{ type: 'literal', value }];
   }
-  return seconds - chunk * SECONDS_IN[unit];
-};
+  return [];
+}
 
 DurationUnitFormat.prototype._formatDurationToParts = function(unit, number) {
   return this.formatDuration.split(SPLIT_POINTS).map((text) => {
@@ -107,7 +88,22 @@ DurationUnitFormat.prototype._formatDurationToParts = function(unit, number) {
 
 DurationUnitFormat.prototype._formatValue = function (number) {
   return this.isTimer ? number.toString().padStart(2, '0') : number.toString();
-}
+};
+
+DurationUnitFormat.prototype._trimOutput = function (result, parts) {
+  const trimmed = trim(result, this.isTimer);
+  if (trimmed.length === 0) {
+    // if everything cancels out, return 0 on the lowest available unit
+    const minUnit = [
+      DurationUnitFormat.units.SECOND,
+      DurationUnitFormat.units.MINUTE,
+      DurationUnitFormat.units.HOUR,
+      DurationUnitFormat.units.DAY,
+    ].find((unit) => has(parts, unit));
+    return this._formatDurationToParts(minUnit, 0);
+  }
+  return trimmed;
+};
 
 type Options = {|
   // unit: $Values<typeof DurationUnitFormat.units>,
@@ -139,27 +135,41 @@ const SECONDS_IN = {
   second: 1,
 };
 
-function has(format, unit) {
-  return format.indexOf(`{${unit}}`) !== -1 || format.indexOf(`{${unit}s}`) !== -1;
+function has(parts, unit) {
+  return !!parts.find((_) => _.value.unit === unit);
 }
 
-function initialValue(value, valueUnit, format, shouldRound) {
-  const initial = value * SECONDS_IN[valueUnit];
-  if (!shouldRound) return initial;
-
-  let hasLowerUnit = has(format, DurationUnitFormat.units.SECOND);
-  return [
-    DurationUnitFormat.units.MINUTE,
-    DurationUnitFormat.units.HOUR,
-    DurationUnitFormat.units.DAY,
-  ].reduce((seconds, unit) => {
-    if (hasLowerUnit) {
-      return seconds;
-    } else {
-      hasLowerUnit = has(format, unit);
-      return Math.round(seconds / SECONDS_IN[unit]) * SECONDS_IN[unit];
+function splitSecondsInBuckets(value, valueUnit, parts, shouldRound) {
+  let seconds = value * SECONDS_IN[valueUnit];
+  // Rounding will only affect the lowest unit
+  // check how many seconds we need to add
+  if (shouldRound) {
+    const lowestUnit = [
+      DurationUnitFormat.units.SECOND,
+      DurationUnitFormat.units.MINUTE,
+      DurationUnitFormat.units.HOUR,
+      DurationUnitFormat.units.DAY,
+    ].find((unit) => has(parts, unit));
+    // These many seconds will be ignored by the lowest unit
+    const remainder = seconds % SECONDS_IN[lowestUnit];
+    if (2 * remainder >= SECONDS_IN[lowestUnit]) {
+      // The remainder is large, add enough seconds to increse the lowest unit
+      seconds += SECONDS_IN[lowestUnit] - remainder;
     }
-  }, initial);
+  }
+  const buckets = {};
+  [
+    DurationUnitFormat.units.DAY,
+    DurationUnitFormat.units.HOUR,
+    DurationUnitFormat.units.MINUTE,
+    DurationUnitFormat.units.SECOND,
+  ].forEach((unit) => {
+    if (has(parts, unit)) {
+      buckets[unit] = Math.floor(seconds / SECONDS_IN[unit]);
+      seconds -= buckets[unit] * SECONDS_IN[unit];
+    }
+  });
+  return buckets;
 }
 
 export default DurationUnitFormat;
