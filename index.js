@@ -12,10 +12,10 @@ function DurationUnitFormat(locales: string | Array<string>, options?: Options =
   this.isTimer = this.style === DurationUnitFormat.styles.TIMER;
   // .format used `seconds`, `minutes`, `hours`, ... as placeholders
   this.format = options.format || (this.isTimer ? '{minutes}:{seconds}' : '{seconds}');
-  // TODO what does this do again?
+  // How to format unit according to style
   this.formatUnits = (options || defaultOptions).formatUnits || defaultOptions.formatUnits;
-  // TODO what?
-  this.formatDuration = options.formatDuration || defaultOptions.formatDuration;
+  // .formatDuration determines whether we use a space or not
+  this.formatDuration = getFormatDuration(options, this.style);
   this.shouldRound = options.round === true;
 }
 
@@ -76,7 +76,8 @@ DurationUnitFormat.prototype._formatDurationToParts = function(unit, number) {
       return;
     }
     if (text === '{unit}') {
-      const message = this.formatUnits[unit] || '{value}';
+      const unitWithStyle = isSpecialStyle(this.style) ? `${unit}-${this.style}` : unit;
+      const message = this.formatUnits[unitWithStyle] || '{value}';
       const formattedUnit = new IntlMessageFormat(message, this.locales).format({ value: number });
       return { type: 'unit', value: formattedUnit };
     }
@@ -116,11 +117,30 @@ type Options = {|
 const defaultOptions = {
   // unit: DurationUnitFormat.units.SECOND,
   formatDuration: '{value} {unit}',
+  formatDuration_long: '{value} {unit}',
+  formatDuration_short: '{value} {unit}',
+  formatDuration_narrow: '{value}{unit}',
   formatUnits: {
+    // custom values
     [DurationUnitFormat.units.DAY]: '{value, plural, one {day} other {days}}',
     [DurationUnitFormat.units.HOUR]: '{value, plural, one {hour} other {hours}}',
     [DurationUnitFormat.units.MINUTE]: '{value, plural, one {minute} other {minutes}}',
     [DurationUnitFormat.units.SECOND]: '{value, plural, one {second} other {seconds}}',
+    // long
+    [`${DurationUnitFormat.units.DAY}-long`]: '{value, plural, one {day} other {days}}',
+    [`${DurationUnitFormat.units.HOUR}-long`]: '{value, plural, one {hour} other {hours}}',
+    [`${DurationUnitFormat.units.MINUTE}-long`]: '{value, plural, one {minute} other {minutes}}',
+    [`${DurationUnitFormat.units.SECOND}-long`]: '{value, plural, one {second} other {seconds}}',
+    // short
+    [`${DurationUnitFormat.units.DAY}-short`]: '{value, plural, one {day} other {days}}',
+    [`${DurationUnitFormat.units.HOUR}-short`]: 'hr',
+    [`${DurationUnitFormat.units.MINUTE}-short`]: 'min',
+    [`${DurationUnitFormat.units.SECOND}-short`]: 'sec',
+    // narrow
+    [`${DurationUnitFormat.units.DAY}-narrow`]: 'd',
+    [`${DurationUnitFormat.units.HOUR}-narrow`]: 'h',
+    [`${DurationUnitFormat.units.MINUTE}-narrow`]: 'm',
+    [`${DurationUnitFormat.units.SECOND}-narrow`]: 's',
   },
   round: false,
   style: DurationUnitFormat.styles.CUSTOM,
@@ -170,6 +190,21 @@ function splitSecondsInBuckets(value, valueUnit, parts, shouldRound) {
     }
   });
   return buckets;
+}
+
+function isSpecialStyle(style) {
+  return [
+    DurationUnitFormat.styles.LONG,
+    DurationUnitFormat.styles.SHORT,
+    DurationUnitFormat.styles.NARROW,
+  ].includes(style);
+}
+
+function getFormatDuration(options, style) {
+  const key = isSpecialStyle(style)
+    ? `formatDuration_${style}`
+    : 'formatDuration';
+  return options[key] || defaultOptions[key] || defaultOptions.formatDuration;
 }
 
 export default DurationUnitFormat;

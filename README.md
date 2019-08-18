@@ -16,6 +16,7 @@ I'm not in any way part of the standardization process, that's why this package 
 
 1. Natural language time: `1 minute 20 seconds`
 1. Timers: `01:20`
+1. Short formats `1 hr 2 min 30 sec` or `1h 2m 30s`
 
 ## Usage
 
@@ -139,6 +140,15 @@ Given the input of `1`, it'll generate
 | `{value, plural, other {秒}}` | `秒` |
 | `s` | `s` |
 
+The formats and localization of placeholders for the style `LONG`, `SHORT` and `NARROW` can be configured with
+
+```js
+{
+  [`${DurationUnitFormat.units.DAY}-${DurationUnitFormat.styles.LONG}`]: '{value, plural, one {day} other {days}}',
+  [`${DurationUnitFormat.units.DAY}-${DurationUnitFormat.styles.SHORT}`]: '{value, plural, one {day} other {days}}',
+  [`${DurationUnitFormat.units.DAY}-${DurationUnitFormat.styles.NARROW}`]: 'd',
+}
+
 ## `round`
 
 Whether or not to round results when smaller units are missing. Defaults to `false`.
@@ -155,7 +165,10 @@ Given the input of `30` and the format `{minutes}`
 One of
 
 1. `DurationUnitFormat.styles.TIMER` for timers (`1:30`)
-2. `DurationUnitFormat.styles.CUSTOM` for custom formats (`1 minute 30 seconds`)
+1. `DurationUnitFormat.styles.CUSTOM` for custom formats (`1 minute 30 seconds`)
+1. `DurationUnitFormat.styles.LONG` for long format time (`1 minute 30 seconds`)
+1. `DurationUnitFormat.styles.SHORT` for short format time (`1 min 30 sec`)
+1. `DurationUnitFormat.styles.NARROW` for narrow format time (`1m 30s`)
 
 The default is `CUSTOM`.
 
@@ -172,6 +185,15 @@ Given the input of `3600` (1 hour), it'll generate
 | `TIMER` | `{seconds}s` | `3600s` |
 | `TIMER` | `{hour}:{minutes}:{seconds}` | `1:00:00` |
 | `TIMER` | `{days}d {hour}:{minutes}:{seconds}` | `0d 01:00:00` |
+| `LONG` | undefined (defaults to `{seconds}`) | `3600 seconds` |
+| `LONG` | `{minutes} {seconds}` | `60 minutes` |
+| `LONG` | `{hour} {minutes} {seconds}` | `1 hour` |
+| `SHORT` | undefined (defaults to `{seconds}`) | `3600 sec` |
+| `SHORT` | `{minutes} {seconds}` | `60 min` |
+| `SHORT` | `{hour} {minutes} {seconds}` | `1 hr` |
+| `NARROW` | undefined (defaults to `{seconds}`) | `3600s` |
+| `NARROW` | `{minutes} {seconds}` | `60m` |
+| `NARROW` | `{hour} {minutes} {seconds}` | `1h` |
 
 As shown from the examples, when `TIMER` is used
 
