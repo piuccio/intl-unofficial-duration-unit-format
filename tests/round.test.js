@@ -38,5 +38,10 @@ describe('formatToParts', () => {
       { type: 'literal', value: ' ' },
       { type: 'unit', value: 'hours' },
     ]);
+    expect(parts(23 * 3600 /* h */ + 59 * 60 /* m */ + 40)).toEqual([
+      { type: 'hour', value: '24' },
+      { type: 'literal', value: ' ' },
+      { type: 'unit', value: 'hours' },
+    ]);
   });
 });
