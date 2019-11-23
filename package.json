@@ -42,20 +42,20 @@
     }
   },
   "devDependencies": {
-    "babel-eslint": "10.0.2",
+    "babel-eslint": "10.0.3",
     "buble-jest-flow": "1.0.7",
-    "eslint": "6.1.0",
-    "eslint-plugin-flowtype": "4.2.0",
-    "flow-bin": "0.105.2",
-    "intl-messageformat": "6.1.7",
-    "intl-pluralrules": "1.0.3",
+    "eslint": "6.7.0",
+    "eslint-plugin-flowtype": "4.4.1",
+    "flow-bin": "0.112.0",
+    "intl-messageformat": "7.5.4",
+    "intl-pluralrules": "1.1.1",
     "jest": "24.9.0",
-    "rollup": "1.19.4",
-    "rollup-plugin-babel-minify": "9.0.0",
+    "rollup": "1.27.4",
+    "rollup-plugin-babel-minify": "9.1.1",
     "rollup-plugin-buble": "0.19.8",
-    "rollup-plugin-filesize": "6.2.0",
+    "rollup-plugin-filesize": "6.2.1",
     "rollup-plugin-flow": "1.1.1",
-    "rollup-plugin-flow-entry": "0.3.1"
+    "rollup-plugin-flow-entry": "0.3.3"
   },
   "peerDependencies": {
     "intl-messageformat": ">= 5.1"
