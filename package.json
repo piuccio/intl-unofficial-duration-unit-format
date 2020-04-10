@@ -2,13 +2,16 @@
   "name": "intl-unofficial-duration-unit-format",
   "version": "2.0.0",
   "description": "Unofficial implementation of duration UnitFormat",
-  "main": "dist/es5/bundle.cjs.min.js",
-  "module": "dist/es6/bundle.cjs.min.js",
+  "main": "dist/cjs/duration-unit-format.cjs.js",
+  "module": "dist/esm/duration-unit-format.esm.js",
+  "exports": {
+    "import": "dist/esm/duration-unit-format.esm.js",
+    "default": "dist/cjs/duration-unit-format.cjs.js"
+  },
   "scripts": {
     "compile": "rollup -c rollup.config.js",
     "codecov": "codecov",
-    "flow": "flow",
-    "lint": "eslint index.js tests lib",
+    "lint": "npx eslint index.js tests lib",
     "prepare": "npm run compile",
     "test": "jest",
     "test:coverage": "jest --coverage",
@@ -36,28 +39,20 @@
     "testEnvironment": "node",
     "setupFiles": [
       "<rootDir>/tests/_setup.js"
-    ],
-    "transform": {
-      "\\.js$": "buble-jest-flow"
-    }
+    ]
   },
   "devDependencies": {
-    "babel-eslint": "10.0.3",
-    "buble-jest-flow": "1.0.7",
-    "eslint": "6.7.0",
-    "eslint-plugin-flowtype": "4.4.1",
-    "flow-bin": "0.112.0",
+    "@babel/core": "7.9.0",
+    "@babel/preset-env": "7.9.5",
+    "babel-jest": "25.3.0",
     "intl-messageformat": "7.5.4",
     "intl-pluralrules": "1.1.1",
-    "jest": "24.9.0",
+    "jest": "25.3.0",
     "rollup": "1.27.4",
-    "rollup-plugin-babel-minify": "9.1.1",
-    "rollup-plugin-buble": "0.19.8",
-    "rollup-plugin-filesize": "6.2.1",
-    "rollup-plugin-flow": "1.1.1",
-    "rollup-plugin-flow-entry": "0.3.3"
+    "rollup-plugin-filesize": "6.2.1"
   },
   "peerDependencies": {
     "intl-messageformat": ">= 5.1"
-  }
+  },
+  "dependencies": {}
 }

@@ -1,8 +1,7 @@
-// @flow
 import IntlMessageFormat from 'intl-messageformat';
 import trim from './lib/trim';
 
-function DurationUnitFormat(locales: string | Array<string>, options?: Options = defaultOptions) {
+function DurationUnitFormat(locales, options = defaultOptions) {
   this.locales = locales;
   // TODO I'm ignoring the unit for now, value is always expressed in seconds
   this.unit = 'second';
@@ -35,7 +34,7 @@ DurationUnitFormat.styles = {
   NARROW: 'narrow',
 };
 
-DurationUnitFormat.prototype.formatToParts = function (value: number) {
+DurationUnitFormat.prototype.formatToParts = function (value) {
   // Extract all the parts that are actually used from the localised format
   const parts = new IntlMessageFormat(this.format, this.locales).formatToParts({
     second: { unit: DurationUnitFormat.units.SECOND },
@@ -106,14 +105,6 @@ DurationUnitFormat.prototype._trimOutput = function (result, parts) {
   return trimmed;
 };
 
-type Options = {|
-  // unit: $Values<typeof DurationUnitFormat.units>,
-  format?: string,
-  formatDuration?: string,
-  formatUnits?: { [$Values<typeof DurationUnitFormat.units>]: string },
-  round?: boolean,
-  style?: $Values<typeof DurationUnitFormat.styles>,
-|}
 const defaultOptions = {
   // unit: DurationUnitFormat.units.SECOND,
   formatDuration: '{value} {unit}',
