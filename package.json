@@ -2,7 +2,6 @@
   "name": "intl-unofficial-duration-unit-format",
   "version": "2.0.0",
   "description": "Unofficial implementation of duration UnitFormat",
-  "type": "module",
   "main": "dist/cjs/duration-unit-format.cjs.js",
   "module": "dist/esm/duration-unit-format.esm.js",
   "exports": {
