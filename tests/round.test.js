@@ -1,4 +1,3 @@
-// @flow
 import DurationUnitFormat from '../index';
 
 describe('formatToParts', () => {
