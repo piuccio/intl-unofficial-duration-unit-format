@@ -12,9 +12,9 @@ function DurationUnitFormat(locales, options = defaultOptions) {
   // .format used `seconds`, `minutes`, `hours`, ... as placeholders
   this.format = options.format || (this.isTimer ? '{minutes}:{seconds}' : '{seconds}');
   // How to format unit according to style
-  this.formatUnits = (options || defaultOptions).formatUnits || defaultOptions.formatUnits;
+  this.formatUnits = options.formatUnits || defaultOptions.formatUnits;
   // .formatDuration determines whether we use a space or not
-  this.formatDuration = getFormatDuration(options, this.style);
+  this.formatDuration = options.formatDuration || defaultOptions.formatDuration;
   this.shouldRound = options.round === true;
 }
 
@@ -66,17 +66,28 @@ DurationUnitFormat.prototype._formatToken = function(token, buckets) {
 }
 
 DurationUnitFormat.prototype._formatDurationToParts = function(unit, number) {
+  if (this.isTimer) {
+    // With timer style, we only show the value
+    return [{ type: unit, value: this._formatValue(number) }];
+  } else if (isSpecialStyle(this.style)) {
+    return new Intl.NumberFormat(this.locales, {
+      style: 'unit',
+      unit: unit,
+      unitDisplay: this.style,
+    }).formatToParts(number).map((_) => ({
+      // NumberFormat uses 'integer' for types, but I prefer using the unit
+      // This is more similar to what happens in DateTimeFormat
+      type: _.type === 'integer' ? unit : _.type,
+      value: _.value,
+    }));
+  }
+  // This is now only needed for the custom formatting
   return this.formatDuration.split(SPLIT_POINTS).map((text) => {
     if (text === '{value}') {
       return { type: unit, value: this._formatValue(number) };
     }
-    if (this.isTimer) {
-      // With timer style, we only show the value
-      return;
-    }
     if (text === '{unit}') {
-      const unitWithStyle = isSpecialStyle(this.style) ? `${unit}-${this.style}` : unit;
-      const message = this.formatUnits[unitWithStyle] || '{value}';
+      const message = this.formatUnits[unit] || '{value}';
       const formattedUnit = new IntlMessageFormat(message, this.locales).format({ value: number });
       return { type: 'unit', value: formattedUnit };
     }
@@ -92,8 +103,9 @@ DurationUnitFormat.prototype._formatValue = function (number) {
 
 DurationUnitFormat.prototype._trimOutput = function (result, parts) {
   const trimmed = trim(result, this.isTimer);
-  if (trimmed.length === 0) {
-    // if everything cancels out, return 0 on the lowest available unit
+  if (!trimmed.find((_) => _.type !== 'literal')) {
+    // if everything cancels out and there are only literals,
+    // then return 0 on the lowest available unit
     const minUnit = [
       DurationUnitFormat.units.SECOND,
       DurationUnitFormat.units.MINUTE,
@@ -108,33 +120,14 @@ DurationUnitFormat.prototype._trimOutput = function (result, parts) {
 const defaultOptions = {
   // unit: DurationUnitFormat.units.SECOND,
   formatDuration: '{value} {unit}',
-  formatDuration_long: '{value} {unit}',
-  formatDuration_short: '{value} {unit}',
-  formatDuration_narrow: '{value}{unit}',
   formatUnits: {
     // custom values
     [DurationUnitFormat.units.DAY]: '{value, plural, one {day} other {days}}',
     [DurationUnitFormat.units.HOUR]: '{value, plural, one {hour} other {hours}}',
     [DurationUnitFormat.units.MINUTE]: '{value, plural, one {minute} other {minutes}}',
     [DurationUnitFormat.units.SECOND]: '{value, plural, one {second} other {seconds}}',
-    // long
-    [`${DurationUnitFormat.units.DAY}-long`]: '{value, plural, one {day} other {days}}',
-    [`${DurationUnitFormat.units.HOUR}-long`]: '{value, plural, one {hour} other {hours}}',
-    [`${DurationUnitFormat.units.MINUTE}-long`]: '{value, plural, one {minute} other {minutes}}',
-    [`${DurationUnitFormat.units.SECOND}-long`]: '{value, plural, one {second} other {seconds}}',
-    // short
-    [`${DurationUnitFormat.units.DAY}-short`]: '{value, plural, one {day} other {days}}',
-    [`${DurationUnitFormat.units.HOUR}-short`]: 'hr',
-    [`${DurationUnitFormat.units.MINUTE}-short`]: 'min',
-    [`${DurationUnitFormat.units.SECOND}-short`]: 'sec',
-    // narrow
-    [`${DurationUnitFormat.units.DAY}-narrow`]: 'd',
-    [`${DurationUnitFormat.units.HOUR}-narrow`]: 'h',
-    [`${DurationUnitFormat.units.MINUTE}-narrow`]: 'm',
-    [`${DurationUnitFormat.units.SECOND}-narrow`]: 's',
   },
-  round: false,
-  style: DurationUnitFormat.styles.CUSTOM,
+  style: DurationUnitFormat.styles.LONG,
 };
 
 const SPLIT_POINTS = /(\{value\}|\{unit\})/;
@@ -189,13 +182,6 @@ function isSpecialStyle(style) {
     DurationUnitFormat.styles.SHORT,
     DurationUnitFormat.styles.NARROW,
   ].includes(style);
-}
-
-function getFormatDuration(options, style) {
-  const key = isSpecialStyle(style)
-    ? `formatDuration_${style}`
-    : 'formatDuration';
-  return options[key] || defaultOptions[key] || defaultOptions.formatDuration;
 }
 
 export default DurationUnitFormat;
