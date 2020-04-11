@@ -113,6 +113,7 @@ As shown from the examples, when `TIMER` is used
 1. empty units are kept and rendered as `00` or `0` if they're the highest unit in the format. Empty units in `CUSTOM` are discarded.
 1. values are padded to at least 2 digits
 
+Note that on Node.js 10.x, the default implementation of Intl.NumberFormat does not support styles, so you need to use the `@formatjs/intl-unified-numberformat` polyfill.
 
 ### `format`
 
