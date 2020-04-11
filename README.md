@@ -85,7 +85,7 @@ The default is `LONG`.
 
 When the style is `TIMER` numbers are padded and different default formats are applied.
 
-The other options `format`, `formatDuration` and `formatUnits` only apply when the style is `CUSTOM`.
+The options `formatDuration` and `formatUnits` only apply when the style is `CUSTOM`.
 
 Given the input of `3600` (1 hour), it'll generate
 
@@ -117,7 +117,7 @@ Note that on Node.js 10.x, the default implementation of Intl.NumberFormat does 
 
 ### `format`
 
-Custom format of the output string. Default to `{seconds}`.
+Defines the format of the output string. Default to `{seconds}`.
 
 It can be any string containing any of the placeholders `{days}`, `{hours}`, `{minutes}`, `{seconds}` or any other literal. The format of the placeholders can be customized by [`formatDuration`](#formatDuration).
 
