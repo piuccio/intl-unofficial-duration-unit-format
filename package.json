@@ -47,6 +47,7 @@
   "devDependencies": {
     "@babel/core": "7.9.0",
     "@babel/preset-env": "7.9.5",
+    "@formatjs/intl-unified-numberformat": "3.3.1",
     "babel-jest": "25.3.0",
     "intl-messageformat": "8.3.4",
     "intl-pluralrules": "1.2.0",
