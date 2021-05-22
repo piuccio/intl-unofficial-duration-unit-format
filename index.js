@@ -10,7 +10,7 @@ function DurationUnitFormat(locales, options = defaultOptions) {
   // .isTimer determines some special behaviour, we want to keep the 0s
   this.isTimer = this.style === DurationUnitFormat.styles.TIMER;
   // .format used `seconds`, `minutes`, `hours`, ... as placeholders
-  this.format = options.format || (this.isTimer ? '{minutes}:{seconds}' : '{seconds}');
+  this._format = options.format || (this.isTimer ? '{minutes}:{seconds}' : '{seconds}');
   // How to format unit according to style
   this.formatUnits = options.formatUnits || defaultOptions.formatUnits;
   // .formatDuration determines whether we use a space or not
@@ -34,9 +34,13 @@ DurationUnitFormat.styles = {
   NARROW: 'narrow',
 };
 
+DurationUnitFormat.prototype.format = function (value) {
+  return this.formatToParts(value).map(({ value }) => value).join('');
+};
+
 DurationUnitFormat.prototype.formatToParts = function (value) {
   // Extract all the parts that are actually used from the localised format
-  const parts = new IntlMessageFormat(this.format, this.locales).formatToParts({
+  const parts = new IntlMessageFormat(this._format, this.locales).formatToParts({
     second: { unit: DurationUnitFormat.units.SECOND },
     seconds: { unit: DurationUnitFormat.units.SECOND },
     minute: { unit: DurationUnitFormat.units.MINUTE },
