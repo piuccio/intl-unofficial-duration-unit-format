@@ -84,7 +84,8 @@ class DurationUnitFormat {
     if (this.isTimer) {
       // With dotted style, we only show the value
       return [{ type: unit, value: this._formatValue(number) }];
-    } else if (isSpecialStyle(this.style)) {
+    }
+    if (isSpecialStyle(this.style)) {
       return new Intl.NumberFormat(this.locales, {
         style: 'unit',
         unit: unit,
@@ -118,7 +119,7 @@ class DurationUnitFormat {
 
   _trimOutput (result, parts) {
     const trimmed = trim(result, this.isTimer);
-    if (!trimmed.find((_) => _.type !== 'literal')) {
+    if (!trimmed.some((_) => _.type !== 'literal')) {
       // if everything cancels out and there are only literals,
       // then return 0 on the lowest available unit
       const minUnit = [
@@ -195,7 +196,7 @@ const SECONDS_IN = {
 };
 
 function has(parts, unit) {
-  return !!parts.find((_) => _.value.unit === unit);
+  return parts.some((_) => _.value.unit === unit);
 }
 
 function splitSecondsInBuckets(value, valueUnit, parts, fields, shouldRound) {
