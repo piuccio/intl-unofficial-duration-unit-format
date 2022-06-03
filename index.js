@@ -7,9 +7,9 @@ class DurationUnitFormat {
     // TODO I'm ignoring the unit for now, value is always expressed in seconds
     this.unit = 'second';
     // .style determines how the placeholders are converted to plain text
-    this.style = options.style || DurationUnitFormat.styles.LONG;
+    this.style = options.style || DurationUnitFormat.styles.WIDE;
     // .isTimer determines some special behaviour, we want to keep the 0s
-    this.isTimer = this.style === DurationUnitFormat.styles.TIMER;
+    this.isTimer = this.style === DurationUnitFormat.styles.DOTTED;
     // .format used `seconds`, `minutes`, `hours`, ... as placeholders
     this._format = options.format || (this.isTimer ? '{minutes}:{seconds}' : '{seconds}');
     this._fields = options.fields || [
@@ -67,25 +67,29 @@ class DurationUnitFormat {
 
   _formatToken (token, buckets) {
     const {value} = token;
+    // istanbul ignore if
+    if (!value) {
+      return [];
+    }
     if (value.unit) {
       const number = buckets[value.unit];
       return (number || this.isTimer) ? this._formatDurationToParts(value.unit, number) : [];
-    } else if (value) {
-      // If there is no .unit it's text, but it could be an empty string
-      return[{ type: 'literal', value }];
     }
-    return [];
+
+    // If there is no .unit it's text, but it could be an empty string
+    return[{ type: 'literal', value }];
   }
 
   _formatDurationToParts (unit, number) {
     if (this.isTimer) {
-      // With timer style, we only show the value
+      // With dotted style, we only show the value
       return [{ type: unit, value: this._formatValue(number) }];
-    } else if (isSpecialStyle(this.style)) {
+    }
+    if (isSpecialStyle(this.style)) {
       return new Intl.NumberFormat(this.locales, {
         style: 'unit',
         unit: unit,
-        unitDisplay: this.style,
+        unitDisplay: this.style === 'wide' ? 'long' : this.style,
       }).formatToParts(number).map((_) => ({
         // NumberFormat uses 'integer' for types, but I prefer using the unit
         // This is more similar to what happens in DateTimeFormat
@@ -115,7 +119,7 @@ class DurationUnitFormat {
 
   _trimOutput (result, parts) {
     const trimmed = trim(result, this.isTimer);
-    if (!trimmed.find((_) => _.type !== 'literal')) {
+    if (trimmed.every((_) => _.type === 'literal')) {
       // if everything cancels out and there are only literals,
       // then return 0 on the lowest available unit
       const minUnit = [
@@ -151,9 +155,9 @@ DurationUnitFormat.units = {
 
 DurationUnitFormat.styles = {
   CUSTOM: 'custom',
-  TIMER: 'timer',
-  // http://www.unicode.org/cldr/charts/27/summary/pl.html#5556
-  LONG: 'long',
+  DOTTED: 'dotted',
+  // https://www.unicode.org/cldr/cldr-aux/charts/27/summary/pl.html#5556
+  WIDE: 'wide',
   SHORT: 'short',
   NARROW: 'narrow',
 };
@@ -174,7 +178,7 @@ const defaultOptions = {
     [DurationUnitFormat.units.MICROSECOND]: '{value, plural, one {microsecond} other {microseconds}}',
     [DurationUnitFormat.units.NANOSECOND]: '{value, plural, one {nanosecond} other {nanoseconds}}',
   },
-  style: DurationUnitFormat.styles.LONG,
+  style: DurationUnitFormat.styles.WIDE,
 };
 
 const SPLIT_POINTS = /(\{value\}|\{unit\})/;
@@ -192,7 +196,7 @@ const SECONDS_IN = {
 };
 
 function has(parts, unit) {
-  return !!parts.find((_) => _.value.unit === unit);
+  return parts.some((_) => _.value.unit === unit);
 }
 
 function splitSecondsInBuckets(value, valueUnit, parts, fields, shouldRound) {
@@ -242,7 +246,7 @@ function splitSecondsInBuckets(value, valueUnit, parts, fields, shouldRound) {
 
 function isSpecialStyle(style) {
   return [
-    DurationUnitFormat.styles.LONG,
+    DurationUnitFormat.styles.WIDE,
     DurationUnitFormat.styles.SHORT,
     DurationUnitFormat.styles.NARROW,
   ].includes(style);
